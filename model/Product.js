@@ -54,6 +54,11 @@ const productSchema = new Schema({
     type: Number,
     required: true,
   },
+  deleted: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 const virtual = productSchema.virtual("id");
