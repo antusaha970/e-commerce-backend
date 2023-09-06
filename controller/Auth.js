@@ -4,7 +4,7 @@ exports.createUser = async (req, res) => {
   try {
     const user = new User(req.body);
     const doc = await user.save();
-    res.status(201).json(doc);
+    res.status(201).json({ id: doc.id, role: doc.role });
   } catch (error) {
     res.status(400).json(error);
   }
@@ -18,7 +18,7 @@ exports.loginUser = async (req, res) => {
     if (!user) {
       res.status(401).json({ status: "user not found" });
     } else if (user.password === userPassword) {
-      res.status(200).json(user);
+      res.status(200).json({ id: user.id, role: user.role });
     } else {
       res.status(401).json({ status: "invalid credentials" });
     }
