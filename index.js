@@ -9,6 +9,7 @@ const categoryRouter = require("./router/Category");
 const userRouter = require("./router/User");
 const authRouter = require("./router/Auth");
 const cartRouter = require("./router/Cart");
+const orderRouter = require("./router/Order");
 
 // Middleware
 server.use(express.json());
@@ -35,6 +36,7 @@ server.use("/categories", categoryRouter.router);
 server.use("/users", userRouter.router);
 server.use("/auth", authRouter.router);
 server.use("/cart", cartRouter.router);
+server.use("/orders", orderRouter.router);
 
 const PORT = 8080;
 
