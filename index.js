@@ -6,6 +6,9 @@ const cors = require("cors");
 const passport = require("passport");
 const session = require("express-session");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+const JwtStrategy = require("passport-jwt").Strategy;
+const ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local").Strategy;
 const productRouter = require("./router/Product");
 const brandsRouter = require("./router/Brand");
@@ -15,7 +18,13 @@ const authRouter = require("./router/Auth");
 const cartRouter = require("./router/Cart");
 const orderRouter = require("./router/Order");
 const { User } = require("./model/User");
+const { sanitizeUser, SECRET_KEY } = require("./services/common");
 
+// JWT options
+var opts = {};
+
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.secretOrKey = SECRET_KEY;
 server.use(
   session({
     secret: "secret",
@@ -37,13 +46,13 @@ server.use(passport.initialize());
 server.use(passport.session());
 server.use(passport.authenticate("session"));
 
+// Local strategy
 passport.use(
   "local",
   new LocalStrategy(async function (username, password, done) {
     // by default passport uses username
     try {
       const user = await User.findOne({ email: username });
-      console.log(username, password, user);
       if (!user) {
         return done(null, false, { message: "invalid credentials" }); // for safety
       }
@@ -57,11 +66,30 @@ passport.use(
           if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
             return done(null, false, { message: "invalid credentials" });
           }
-          return done(null, user);
+          const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
+          return done(null, token);
         }
       );
     } catch (err) {
       done(err);
+    }
+  })
+);
+// JWT strategy
+passport.use(
+  "jwt",
+  new JwtStrategy(opts, async function (jwt_payload, done) {
+    try {
+      const user = await User.findOne({ id: jwt_payload.sub });
+
+      if (user) {
+        return done(null, user);
+      } else {
+        return done(null, false);
+        // or you could create a new account
+      }
+    } catch (error) {
+      return done(error, false);
     }
   })
 );
@@ -87,7 +115,7 @@ server.use("/orders", orderRouter.router);
 passport.serializeUser(function (user, cb) {
   console.log("serializing user " + user);
   process.nextTick(function () {
-    return cb(null, { id: user._id, role: user.role });
+    return cb(null, sanitizeUser(user));
   });
 });
 
@@ -97,14 +125,6 @@ passport.deserializeUser(function (user, cb) {
     return cb(null, user);
   });
 });
-
-function isAuth(req, res, next) {
-  if (req.user) {
-    next();
-  } else {
-    res.send(401);
-  }
-}
 
 const PORT = 8080;
 
