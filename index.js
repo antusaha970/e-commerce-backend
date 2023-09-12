@@ -96,7 +96,7 @@ passport.use(
       const user = await User.findById(jwt_payload.id);
 
       if (user) {
-        return done(null, user);
+        return done(null, sanitizeUser(user));
       } else {
         return done(null, false);
         // or you could create a new account
@@ -135,7 +135,7 @@ passport.serializeUser(function (user, cb) {
 passport.deserializeUser(function (user, cb) {
   console.log("deserializing user " + user);
   process.nextTick(function () {
-    return cb(null, user);
+    return cb(null, sanitizeUser(user));
   });
 });
 

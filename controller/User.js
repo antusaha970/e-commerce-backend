@@ -14,7 +14,13 @@ exports.fetchUserInfoById = async (req, res) => {
   const { id } = req.user;
   try {
     const user = await User.findById(id);
-    res.status(201).json(user);
+    res.status(201).json({
+      id: user.id,
+      role: user.role,
+      addresses: user.addresses,
+      orders: user.orders,
+      email: user.email,
+    });
   } catch (error) {
     res.status(400).json(error);
   }
