@@ -7,6 +7,7 @@ const passport = require("passport");
 const session = require("express-session");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const cookeParser = require("cookie-parser");
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local").Strategy;
@@ -18,13 +19,20 @@ const authRouter = require("./router/Auth");
 const cartRouter = require("./router/Cart");
 const orderRouter = require("./router/Order");
 const { User } = require("./model/User");
-const { sanitizeUser, SECRET_KEY } = require("./services/common");
+const {
+  sanitizeUser,
+  SECRET_KEY,
+  isAuth,
+  cookieExtractor,
+} = require("./services/common");
+const cookieParser = require("cookie-parser");
 
 // JWT options
 var opts = {};
 
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.jwtFromRequest = cookieExtractor;
 opts.secretOrKey = SECRET_KEY;
+server.use(cookieParser());
 server.use(
   session({
     secret: "secret",
@@ -45,14 +53,18 @@ server.use(
 server.use(passport.initialize());
 server.use(passport.session());
 server.use(passport.authenticate("session"));
-
+server.use(express.static("dist"));
 // Local strategy
 passport.use(
   "local",
-  new LocalStrategy(async function (username, password, done) {
+  new LocalStrategy({ usernameField: "email" }, async function (
+    email,
+    password,
+    done
+  ) {
     // by default passport uses username
     try {
-      const user = await User.findOne({ email: username });
+      const user = await User.findOne({ email: email });
       if (!user) {
         return done(null, false, { message: "invalid credentials" }); // for safety
       }
@@ -67,7 +79,7 @@ passport.use(
             return done(null, false, { message: "invalid credentials" });
           }
           const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
-          return done(null, token);
+          return done(null, { token });
         }
       );
     } catch (err) {
@@ -79,8 +91,9 @@ passport.use(
 passport.use(
   "jwt",
   new JwtStrategy(opts, async function (jwt_payload, done) {
+    console.log({ jwt_payload });
     try {
-      const user = await User.findOne({ id: jwt_payload.sub });
+      const user = await User.findById(jwt_payload.id);
 
       if (user) {
         return done(null, user);
@@ -106,9 +119,9 @@ async function main() {
 server.use("/products", productRouter.router);
 server.use("/brands", brandsRouter.router);
 server.use("/categories", categoryRouter.router);
-server.use("/users", userRouter.router);
+server.use("/users", isAuth(), userRouter.router);
 server.use("/auth", authRouter.router);
-server.use("/cart", cartRouter.router);
+server.use("/cart", isAuth(), cartRouter.router);
 server.use("/orders", orderRouter.router);
 
 // passport
