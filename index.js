@@ -8,7 +8,7 @@ const passport = require("passport");
 const session = require("express-session");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const cookeParser = require("cookie-parser");
+const path = require("path");
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local").Strategy;
@@ -20,13 +20,13 @@ const authRouter = require("./router/Auth");
 const cartRouter = require("./router/Cart");
 const orderRouter = require("./router/Order");
 const { User } = require("./model/User");
+const cookieParser = require("cookie-parser");
 const {
   sanitizeUser,
   SECRET_KEY,
   isAuth,
   cookieExtractor,
 } = require("./services/common");
-const cookieParser = require("cookie-parser");
 
 // JWT options
 var opts = {};
@@ -54,7 +54,7 @@ server.use(
 server.use(passport.initialize());
 server.use(passport.session());
 server.use(passport.authenticate("session"));
-server.use(express.static("dist"));
+server.use(express.static(path.resolve(__dirname, "dist")));
 // Local strategy
 passport.use(
   "local",
@@ -136,7 +136,7 @@ passport.serializeUser(function (user, cb) {
 passport.deserializeUser(function (user, cb) {
   console.log("deserializing user " + user);
   process.nextTick(function () {
-    return cb(null, sanitizeUser(user));
+    return cb(null, user);
   });
 });
 

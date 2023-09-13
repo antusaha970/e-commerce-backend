@@ -27,7 +27,7 @@ exports.createUser = async (req, res) => {
                 expires: new Date(Date.now() + 3600000),
                 httpOnly: true,
               })
-              .json(token);
+              .json({ id: doc.id, role: doc.role });
           }
         });
       }
@@ -38,13 +38,13 @@ exports.createUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
-  console.log("loginUser", req.user);
+  const user = req.user;
   res
-    .cookie("jwt", req.user.token, {
+    .cookie("jwt", user.token, {
       expires: new Date(Date.now() + 3600000),
       httpOnly: true,
     })
-    .json(req.user.token);
+    .json({ id: user.id, role: user.role });
 };
 exports.checkUser = async (req, res) => {
   if (req.user) {
