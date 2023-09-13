@@ -13,8 +13,8 @@ exports.cookieExtractor = function (req) {
   if (req && req.cookies) {
     token = req.cookies["jwt"];
   }
-  token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZmY3MWMxMWE5NmQ5ZWMwOWNmNGE1YiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjk0NTM2MTgyfQ.JSStwPzuGuaLUBGgZqqk6T-HuBSvbrLdL9ygU_Ao4k8";
+  // token =
+  //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MDFiYzc5ZWE1M2UxZmE3MjY2NDdhOSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjk0NjEyNjAzfQ.mqouTvk9iV_-JdIyfhW4P4csna5lYiG0cxtIF7F5YLE";
   return token;
 };
 exports.SECRET_KEY = "secret";
