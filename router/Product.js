@@ -4,12 +4,14 @@ const {
   fetchAllFilteredProduct,
   fetchProductById,
   updateProductById,
+  fetchSearchProducts,
 } = require("../controller/Product");
 const router = express.Router();
 
 router
   .post("/", createProduct)
   .get("/", fetchAllFilteredProduct)
+  .get("/search", fetchSearchProducts)
   .get("/:id", fetchProductById)
   .patch("/:id", updateProductById);
 

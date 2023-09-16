@@ -54,7 +54,9 @@ server.use(
 server.use(passport.initialize());
 server.use(passport.session());
 server.use(passport.authenticate("session"));
+
 server.use(express.static(path.resolve(__dirname, "build")));
+
 // Local strategy
 passport.use(
   "local",

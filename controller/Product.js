@@ -25,6 +25,17 @@ exports.fetchAllFilteredProduct = async (req, res) => {
       query = query.find({ brand: req.query.brand });
       totalDoc = totalDoc.find({ brand: req.query.brand });
     }
+    if (req.query.searchText && !req.query.category && !req.query.brand) {
+      const searchQuery = {
+        $or: [
+          { title: { $regex: `${req.query.searchText}`, $options: "i" } }, // 'i' makes the regex case-insensitive
+          { brand: { $regex: `${req.query.searchText}`, $options: "i" } },
+          { category: { $regex: `${req.query.searchText}`, $options: "i" } },
+        ],
+      };
+      query = query.find(searchQuery);
+      totalDoc = totalDoc.find(searchQuery);
+    }
     if (req.query._sort && req.query._order) {
       query = query.sort({ [req.query._sort]: req.query._order });
     }
@@ -51,6 +62,24 @@ exports.fetchProductById = async (req, res) => {
   try {
     const product = await Product.findById(id);
     res.status(201).json(product);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+exports.fetchSearchProducts = async (req, res) => {
+  try {
+    const { text } = req.query;
+    const searchQuery = {
+      $or: [
+        { title: { $regex: `${text}`, $options: "i" } }, // 'i' makes the regex case-insensitive
+        { brand: { $regex: `${text}`, $options: "i" } },
+        { category: { $regex: `${text}`, $options: "i" } },
+      ],
+    };
+    const products = await Product.find(searchQuery);
+    const totalDocs = await Product.find(searchQuery).count();
+    res.set("X-Total-Count", totalDocs);
+    res.status(201).json(products);
   } catch (error) {
     res.status(400).json(error);
   }
