@@ -126,6 +126,10 @@ server.use("/users", isAuth(), userRouter.router);
 server.use("/auth", authRouter.router);
 server.use("/cart", isAuth(), cartRouter.router);
 server.use("/orders", orderRouter.router);
+server.get("*", (req, res) => {
+  // Redirect the user to the home page
+  res.redirect("/");
+});
 
 // passport
 passport.serializeUser(function (user, cb) {

@@ -53,3 +53,27 @@ exports.checkUser = async (req, res) => {
     req.sendStatus(401);
   }
 };
+
+exports.logOutUser = async (req, res) => {
+  try {
+    // Clear the session
+    await new Promise((resolve, reject) => {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    // Clear the cookie
+    res.clearCookie("jwt");
+    res.status(200).json({ status: "logged out successfully" }); // Redirect to your login page
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Handle any errors
+    res.status(500).send("Logout error");
+  }
+};
