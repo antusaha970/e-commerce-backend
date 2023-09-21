@@ -96,3 +96,17 @@ exports.updateProductById = async (req, res) => {
     res.status(400).json(error);
   }
 };
+
+exports.getSuggestedProducts = async (req, res) => {
+  const { category } = req.params;
+  try {
+    const searchQuery = {
+      $or: [{ category: { $regex: `${category}`, $options: "i" } }],
+    };
+    const product = await Product.find(searchQuery).limit(4);
+    res.status(200).json(product);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json(error);
+  }
+};
